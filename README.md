@@ -1,4 +1,4 @@
-# emojidic
+# kawasemi-emojidic
 
 かわせみ4用の絵文字の辞書を作るためのプログラムです。
 
