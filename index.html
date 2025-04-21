@@ -19,9 +19,20 @@
 
 	<!-- 結果を表示するエリア -->
 	<div id="controls">
-		<!-- 辞書ファイルをダウンロードするボタン -->
 		<button id="download-button" type="button">辞書ファイルをダウンロード</button>
 	</div>
+
+	<div id="danger-area">
+		<button id="reset" type="button" class="button danger">初期値に戻す</button>
+	</div>
+
+	<dialog id="confirm-dialog">
+		<p>初期値に戻しますか？</p>
+		<div class="dialog-buttons">
+			<button id="confirm-reset" class="button danger">はい</button>
+			<button id="cancel-reset" class="button">いいえ</button>
+		</div>
+	</dialog>
 
 	<!-- 統計情報を表示する要素 -->
 	<div id="stats">

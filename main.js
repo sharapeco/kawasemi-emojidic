@@ -55,8 +55,75 @@ document.addEventListener("DOMContentLoaded", () => {
 	const emojiList = document.getElementById("emoji-list");
 	const inputArea = document.getElementById("input-area");
 	const downloadButton = document.getElementById("download-button");
+	const resetButton = document.getElementById("reset");
+	const confirmDialog = document.getElementById("confirm-dialog");
+	const confirmResetButton = document.getElementById("confirm-reset");
+	const cancelResetButton = document.getElementById("cancel-reset");
 	const dictionary = new EmojiDictionary();
 	let inputFields = []; // 入力フィールドの配列を保持
+
+	// 初期データの読み込み
+	fetch('full-emoji-list.txt')
+		.then(response => response.text())
+		.then(text => {
+			const lines = text.split('\n').filter(line => line.trim() !== '');
+			const emojis = lines.map(line => line.split('\t')[0]);
+			const readings = {};
+			for (const line of lines) {
+				const [emoji, reading] = line.split('\t');
+				if (reading) {
+					readings[emoji] = reading;
+				}
+			}
+
+			// localStorageが空の場合は初期値を設定
+			if (Object.keys(dictionary.data.readings).length === 0) {
+				dictionary.data.readings = readings;
+				dictionary.saveToStorage();
+			}
+
+			emojiList.value = emojis.join('');
+			dictionary.setEmojis(emojis);
+			updateInputArea(emojis);
+		})
+		.catch(error => {
+			console.error('絵文字リストの読み込みに失敗しました:', error);
+		});
+
+	// リセットボタンの処理
+	resetButton.addEventListener("click", () => {
+		confirmDialog.showModal();
+	});
+
+	confirmResetButton.addEventListener("click", () => {
+		fetch('full-emoji-list.txt')
+			.then(response => response.text())
+			.then(text => {
+				const lines = text.split('\n').filter(line => line.trim() !== '');
+				const emojis = lines.map(line => line.split('\t')[0]);
+				const readings = {};
+				for (const line of lines) {
+					const [emoji, reading] = line.split('\t');
+					if (reading) {
+						readings[emoji] = reading;
+					}
+				}
+
+				dictionary.data.readings = readings;
+				dictionary.saveToStorage();
+				emojiList.value = emojis.join('');
+				dictionary.setEmojis(emojis);
+				updateInputArea(emojis);
+				confirmDialog.close();
+			})
+			.catch(error => {
+				console.error('絵文字リストの読み込みに失敗しました:', error);
+			});
+	});
+
+	cancelResetButton.addEventListener("click", () => {
+		confirmDialog.close();
+	});
 
 	// キーボードショートカットの処理
 	document.addEventListener("keydown", (e) => {
@@ -101,19 +168,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			inputFields[nextIndex].focus();
 		}
 	});
-
-	// 初期データの読み込み
-	fetch('full-emoji-list.txt')
-		.then(response => response.text())
-		.then(text => {
-			const emojis = text.split('\n').filter(emoji => emoji.trim() !== '');
-			emojiList.value = emojis.join('');
-			dictionary.setEmojis(emojis);
-			updateInputArea(emojis);
-		})
-		.catch(error => {
-			console.error('絵文字リストの読み込みに失敗しました:', error);
-		});
 
 	// 絵文字リストの変更を監視
 	emojiList.addEventListener("input", () => {
