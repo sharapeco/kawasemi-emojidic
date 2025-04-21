@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// 絵文字リストの変更を監視
 	emojiList.addEventListener("input", () => {
-		const emojis = splitChar(emojiList.value);
+		const emojis = splitChar(emojiList.value).filter((char) => /[^\s]/.test(char));
 		dictionary.setEmojis(emojis);
 		updateInputArea(emojis);
 	});
