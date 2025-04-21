@@ -57,6 +57,19 @@ document.addEventListener("DOMContentLoaded", () => {
 	const downloadButton = document.getElementById("download-button");
 	const dictionary = new EmojiDictionary();
 
+	// 初期データの読み込み
+	fetch('full-emoji-list.txt')
+		.then(response => response.text())
+		.then(text => {
+			const emojis = text.split('\n').filter(emoji => emoji.trim() !== '');
+			emojiList.value = emojis.join('');
+			dictionary.setEmojis(emojis);
+			updateInputArea(emojis);
+		})
+		.catch(error => {
+			console.error('絵文字リストの読み込みに失敗しました:', error);
+		});
+
 	// 絵文字リストの変更を監視
 	emojiList.addEventListener("input", () => {
 		const emojis = splitChar(emojiList.value).filter((char) => /[^\s]/.test(char));
@@ -113,10 +126,4 @@ document.addEventListener("DOMContentLoaded", () => {
 		document.body.removeChild(a);
 		URL.revokeObjectURL(url);
 	});
-
-	// 初期データの読み込み
-	if (dictionary.data.emojis.length > 0) {
-		emojiList.value = dictionary.data.emojis.join("");
-		updateInputArea(dictionary.data.emojis);
-	}
 });
