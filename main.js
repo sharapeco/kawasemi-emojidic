@@ -1,0 +1,104 @@
+// ローカルストレージのキー
+const STORAGE_KEY = "emojidic_data";
+
+// 絵文字リストと読みのデータを管理するクラス
+class EmojiDictionary {
+	constructor() {
+		this.data = this.loadFromStorage();
+	}
+
+	loadFromStorage() {
+		const saved = localStorage.getItem(STORAGE_KEY);
+		return saved ? JSON.parse(saved) : { emojis: [], readings: {} };
+	}
+
+	saveToStorage() {
+		localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+	}
+
+	setEmojis(emojis) {
+		this.data.emojis = [...new Set(emojis)];
+		this.saveToStorage();
+	}
+
+	setReading(emoji, reading) {
+		this.data.readings[emoji] = reading;
+		this.saveToStorage();
+	}
+
+	getReading(emoji) {
+		return this.data.readings[emoji] || "";
+	}
+
+	generateDictionary() {
+		let result = "// KAWASEMI-UTF16\n";
+		for (const emoji of this.data.emojis) {
+			const reading = this.data.readings[emoji];
+			if (reading) {
+				result += `${reading}\t${emoji}\t記号類\n`;
+			}
+		}
+		result += `// ${this.data.emojis.length} 語書き出しました\n`;
+		return result;
+	}
+}
+
+// メインの処理
+document.addEventListener("DOMContentLoaded", () => {
+	const emojiList = document.getElementById("emoji-list");
+	const inputArea = document.getElementById("input-area");
+	const downloadButton = document.getElementById("download-button");
+	const dictionary = new EmojiDictionary();
+
+	// 絵文字リストの変更を監視
+	emojiList.addEventListener("input", () => {
+		const emojis = Array.from(emojiList.value);
+		dictionary.setEmojis(emojis);
+		updateInputArea(emojis);
+	});
+
+	// 入力エリアの更新
+	function updateInputArea(emojis) {
+		inputArea.innerHTML = "";
+		for (const emoji of emojis) {
+			const div = document.createElement("div");
+			div.className = "item";
+
+			const label = document.createElement("label");
+			label.textContent = emoji;
+
+			const input = document.createElement("input");
+			input.type = "text";
+			input.className = "reading";
+			input.value = dictionary.getReading(emoji);
+
+			input.addEventListener("input", () => {
+				dictionary.setReading(emoji, input.value);
+			});
+
+			div.appendChild(label);
+			div.appendChild(input);
+			inputArea.appendChild(div);
+		}
+	}
+
+	// ダウンロードボタンの処理
+	downloadButton.addEventListener("click", () => {
+		const content = dictionary.generateDictionary();
+		const blob = new Blob([content], { type: "text/plain;charset=utf-16" });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = "ユーザ絵文字辞書.txt";
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+	});
+
+	// 初期データの読み込み
+	if (dictionary.data.emojis.length > 0) {
+		emojiList.value = dictionary.data.emojis.join("");
+		updateInputArea(dictionary.data.emojis);
+	}
+});
