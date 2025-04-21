@@ -1,6 +1,9 @@
 // ローカルストレージのキー
 const STORAGE_KEY = "emojidic_data";
 
+// splitChar関数をインポート
+import { splitChar } from './split-char.js';
+
 // 絵文字リストと読みのデータを管理するクラス
 class EmojiDictionary {
 	constructor() {
@@ -56,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// 絵文字リストの変更を監視
 	emojiList.addEventListener("input", () => {
-		const emojis = Array.from(emojiList.value);
+		const emojis = splitChar(emojiList.value);
 		dictionary.setEmojis(emojis);
 		updateInputArea(emojis);
 	});
