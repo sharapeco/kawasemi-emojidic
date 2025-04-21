@@ -56,6 +56,51 @@ document.addEventListener("DOMContentLoaded", () => {
 	const inputArea = document.getElementById("input-area");
 	const downloadButton = document.getElementById("download-button");
 	const dictionary = new EmojiDictionary();
+	let inputFields = []; // 入力フィールドの配列を保持
+
+	// キーボードショートカットの処理
+	document.addEventListener("keydown", (e) => {
+		if ((e.ctrlKey || e.metaKey) && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
+			const currentIndex = inputFields.indexOf(document.activeElement);
+			const currentValue = currentIndex !== -1 ? inputFields[currentIndex].value : "";
+
+			// フォーカスがない場合は最初のinputにフォーカス
+			if (currentIndex === -1) {
+				inputFields[0].focus();
+				return;
+			}
+
+			// 現在の状態と異なる入力フィールドを探す
+			let nextIndex = -1;
+			if (e.key === "ArrowDown") {
+				// 下方向に検索
+				for (let i = currentIndex + 1; i < inputFields.length; i++) {
+					if (inputFields[i].value !== currentValue) {
+						nextIndex = i;
+						break;
+					}
+				}
+				// 見つからなかった場合は最後のinputにフォーカス
+				if (nextIndex === -1) {
+					nextIndex = inputFields.length - 1;
+				}
+			} else {
+				// 上方向に検索
+				for (let i = currentIndex - 1; i >= 0; i--) {
+					if (inputFields[i].value !== currentValue) {
+						nextIndex = i;
+						break;
+					}
+				}
+				// 見つからなかった場合は最初のinputにフォーカス
+				if (nextIndex === -1) {
+					nextIndex = 0;
+				}
+			}
+
+			inputFields[nextIndex].focus();
+		}
+	});
 
 	// 初期データの読み込み
 	fetch('full-emoji-list.txt')
@@ -80,6 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	// 入力エリアの更新
 	function updateInputArea(emojis) {
 		inputArea.innerHTML = "";
+		inputFields = []; // 入力フィールドの配列をリセット
 		for (const emoji of emojis) {
 			const div = document.createElement("div");
 			div.className = "item";
@@ -100,6 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			div.appendChild(label);
 			div.appendChild(input);
 			inputArea.appendChild(div);
+			inputFields.push(input); // 入力フィールドを配列に追加
 		}
 		updateStats();
 	}
