@@ -77,3 +77,38 @@ h1 {
 #download-button:hover {
 	background-color: #357abd;
 }
+
+#stats {
+	position: fixed;
+	top: 0;
+	right: 0;
+	margin: 20px;
+	background: white;
+	padding: 20px;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	z-index: 9999;
+}
+
+#stats-count {
+	font-size: 24px;
+	font-weight: 300;
+	white-space: nowrap;
+}
+
+.fraction-slash {
+	margin: 0 0.1667em; /* 1/6 em */
+}
+
+#stats div {
+	margin-bottom: 8px;
+	white-space: nowrap;
+}
+
+#stats div:last-child {
+	margin-bottom: 0;
+}
+
+#stats span {
+	font-weight: 400;
+}

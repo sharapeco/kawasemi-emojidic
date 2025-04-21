@@ -22,7 +22,11 @@ class EmojiDictionary {
 	}
 
 	setReading(emoji, reading) {
-		this.data.readings[emoji] = reading;
+		if (reading.trim() === "") {
+			delete this.data.readings[emoji];
+		} else {
+			this.data.readings[emoji] = reading;
+		}
 		this.saveToStorage();
 	}
 
@@ -74,12 +78,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			input.addEventListener("input", () => {
 				dictionary.setReading(emoji, input.value);
+				updateStats();
 			});
 
 			div.appendChild(label);
 			div.appendChild(input);
 			inputArea.appendChild(div);
 		}
+		updateStats();
+	}
+
+	// 統計情報の更新
+	function updateStats() {
+		const statsCount = document.getElementById("stats-count");
+		const emojis = dictionary.data.emojis;
+		const readings = dictionary.data.readings;
+
+		statsCount.innerHTML = `${Object.keys(readings).length}<span class="fraction-slash">/</span>${emojis.length}`;
 	}
 
 	// ダウンロードボタンの処理
