@@ -1,3 +1,7 @@
+:root {
+	--emoji-font: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+}
+
 body {
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
 		sans-serif;
@@ -20,7 +24,7 @@ h1 {
 	border: 1px solid #ddd;
 	border-radius: 4px;
 	font-size: 16px;
-	font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+	font-family: var(--emoji-font);
 	resize: vertical;
 }
 
@@ -38,6 +42,7 @@ h1 {
 }
 
 .item label {
+	font-family: var(--emoji-font);
 	font-size: 24px;
 	margin-right: 15px;
 	min-width: 40px;
