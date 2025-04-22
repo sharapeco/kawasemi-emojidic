@@ -175,6 +175,10 @@ dialog::backdrop {
 	margin-top: 20px;
 }
 
+.dialog-buttons .button {
+	min-width: 8em;
+}
+
 #danger-area {
 	position: fixed;
 	bottom: 20px;
