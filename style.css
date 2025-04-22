@@ -77,34 +77,41 @@ h1 {
 	z-index: 1000;
 }
 
-#download-button {
-	background-color: #4a90e2;
-	color: white;
+.button {
 	border: none;
 	padding: 10px 20px;
 	border-radius: 4px;
 	font-size: 16px;
 	cursor: pointer;
 	transition: background-color 0.2s;
+	color: var(--text-color);
+	background-color: var(--background);
 }
 
-#download-button:hover {
-	background-color: #357abd;
+.button:hover {
+	color: var(--text-color);
+	background-color: var(--hover-background);
+}
+
+.button:active {
+	color: var(--active-text-color);
+	background-color: var(--active-background);
+}
+
+.button.primary {
+	--text-color: white;
+	--background: #4a90e2;
+	--hover-background: #357abd;
+	--active-text-color: #ccd0d4;
+	--active-background: #2163a1;
 }
 
 .button.danger {
-	background-color: #dc3545;
-	color: white;
-	border: none;
-	padding: 10px 20px;
-	border-radius: 4px;
-	font-size: 16px;
-	cursor: pointer;
-	transition: background-color 0.2s;
-}
-
-.button.danger:hover {
-	background-color: #c82333;
+	--text-color: white;
+	--background: #dc3545;
+	--hover-background: #c82333;
+	--active-text-color: #ccd0d4;
+	--active-background: #b92232;
 }
 
 #stats {
