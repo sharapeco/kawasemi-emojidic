@@ -24,6 +24,10 @@ class EmojiDictionary {
 		this.saveToStorage();
 	}
 
+	getEmojis() {
+		return this.data.emojis;
+	}
+
 	setReading(emoji, reading) {
 		if (reading.trim() === "") {
 			delete this.data.readings[emoji];
@@ -66,6 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const emojiList = document.getElementById("emoji-list");
 	const inputArea = document.getElementById("input-area");
 	const downloadButton = document.getElementById("download-button");
+	const openButton = document.getElementById("open-button");
 	const resetButton = document.getElementById("reset");
 	const confirmDialog = document.getElementById("confirm-dialog");
 	const confirmResetButton = document.getElementById("confirm-reset");
@@ -73,33 +78,112 @@ document.addEventListener("DOMContentLoaded", () => {
 	const dictionary = new EmojiDictionary();
 	let inputFields = []; // 入力フィールドの配列を保持
 
-	// 初期データの読み込み
-	fetch("full-emoji-list.txt")
-		.then((response) => response.text())
-		.then((text) => {
-			const lines = text.split("\n").filter((line) => line.trim() !== "");
-			const emojis = lines.map((line) => line.split("\t")[0]);
-			const readings = {};
-			for (const line of lines) {
-				const [emoji, reading] = line.split("\t");
-				if (reading) {
-					readings[emoji] = reading;
+	const initialEmojis = dictionary.getEmojis();
+	if (initialEmojis.length === 0) {
+		// 初期データの読み込み
+		fetch("full-emoji-list.txt")
+			.then((response) => response.text())
+			.then((text) => {
+				const lines = text.split("\n").filter((line) => line.trim() !== "");
+				const emojis = lines.map((line) => line.split("\t")[0]);
+				const readings = {};
+				for (const line of lines) {
+					const [emoji, reading] = line.split("\t");
+					if (reading) {
+						readings[emoji] = reading;
+					}
 				}
-			}
 
-			// localStorageが空の場合は初期値を設定
-			if (Object.keys(dictionary.data.readings).length === 0) {
-				dictionary.data.readings = readings;
-				dictionary.saveToStorage();
-			}
+				// localStorageが空の場合は初期値を設定
+				if (Object.keys(dictionary.data.readings).length === 0) {
+					dictionary.data.readings = readings;
+					dictionary.saveToStorage();
+				}
 
-			emojiList.value = emojis.join("");
-			dictionary.setEmojis(emojis);
-			updateInputArea(emojis);
-		})
-		.catch((error) => {
-			console.error("絵文字リストの読み込みに失敗しました:", error);
-		});
+				emojiList.value = emojis.join("");
+				dictionary.setEmojis(emojis);
+				updateInputArea(emojis);
+			})
+			.catch((error) => {
+				console.error("絵文字リストの読み込みに失敗しました:", error);
+			});
+	} else {
+		emojiList.value = initialEmojis.join("");
+		updateInputArea(initialEmojis);
+	}
+
+	// 辞書ファイルを開くボタンの処理
+	openButton.addEventListener("click", () => {
+		const input = document.createElement("input");
+		input.type = "file";
+		input.accept = ".txt";
+		input.onchange = (e) => {
+			const file = e.target.files[0];
+			if (file) {
+				const reader = new FileReader();
+				reader.onload = (e) => {
+					const content = e.target.result;
+					// 文字コードを自動判別
+					const encoding = detectEncoding(content);
+					const decodedContent = decodeContent(content, encoding);
+
+					// ヘッダとフッタを除去
+					const lines = decodedContent
+						.split("\n")
+						.filter((line) => line.trim() !== "" && !line.startsWith("//"));
+
+					// 絵文字と読みのマッピングを作成
+					const emojis = new Set();
+					const readings = {};
+
+					for (const line of lines) {
+						const [reading, emoji] = line.split("\t");
+						if (emoji) {
+							emojis.add(emoji);
+							if (!readings[emoji]) {
+								readings[emoji] = [];
+							}
+							readings[emoji].push(reading);
+						}
+					}
+
+					// データを更新
+					dictionary.data.emojis = Array.from(emojis);
+					dictionary.data.readings = readings;
+					dictionary.saveToStorage();
+
+					// 表示を更新
+					emojiList.value = dictionary.data.emojis.join("");
+					updateInputArea(dictionary.data.emojis);
+				};
+				reader.readAsArrayBuffer(file);
+			}
+		};
+		input.click();
+	});
+
+	// 文字コードを自動判別する関数
+	function detectEncoding(buffer) {
+		const bytes = new Uint8Array(buffer);
+		// UTF-16のBOMをチェック
+		if (bytes[0] === 0xff && bytes[1] === 0xfe) {
+			return "UTF-16LE";
+		} else if (bytes[0] === 0xfe && bytes[1] === 0xff) {
+			return "UTF-16BE";
+		}
+		// UTF-8のBOMをチェック
+		if (bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) {
+			return "UTF-8";
+		}
+		// BOMがない場合はUTF-8とみなす
+		return "UTF-8";
+	}
+
+	// 文字コードに応じてデコードする関数
+	function decodeContent(buffer, encoding) {
+		const decoder = new TextDecoder(encoding);
+		return decoder.decode(buffer);
+	}
 
 	// リセットボタンの処理
 	resetButton.addEventListener("click", () => {
