@@ -4,9 +4,6 @@
   "description": "絵文字辞書作成ツール",
   "main": "index.html",
   "scripts": {
-    "start": "http-server -p 12345 -o"
+    "start": "npx http-server -p 12345 -o"
   },
-  "dependencies": {
-    "http-server": "^14.1.1"
-  }
 }
