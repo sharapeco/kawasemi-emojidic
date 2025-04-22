@@ -2,7 +2,7 @@
 const STORAGE_KEY = "emojidic_data";
 
 // splitChar関数をインポート
-import { splitChar } from './split-char.js';
+import { splitChar } from "./split-char.js";
 
 // 絵文字リストと読みのデータを管理するクラス
 class EmojiDictionary {
@@ -28,20 +28,31 @@ class EmojiDictionary {
 		if (reading.trim() === "") {
 			delete this.data.readings[emoji];
 		} else {
-			this.data.readings[emoji] = reading;
+			// カンマまたはスペースで区切られた読みを配列に変換
+			const readings = reading.split(/[,、\s]+/).filter((r) => r.trim() !== "");
+			this.data.readings[emoji] = readings;
 		}
 		this.saveToStorage();
 	}
 
 	getReading(emoji) {
-		return this.data.readings[emoji] || "";
+		const readings = this.data.readings[emoji];
+		if (readings == null) {
+			return "";
+		}
+		return Array.isArray(readings) ? readings.join(", ") : readings;
 	}
 
 	generateDictionary() {
 		let result = "// KAWASEMI-UTF16\n";
 		for (const emoji of this.data.emojis) {
-			const reading = this.data.readings[emoji];
-			if (reading) {
+			const readings = this.data.readings[emoji];
+			if (readings == null) {
+				continue;
+			}
+			const arrayReadings = Array.isArray(readings) ? readings : [readings];
+			// 各読みに対して辞書エントリを生成
+			for (const reading of arrayReadings) {
 				result += `${reading}\t${emoji}\t記号類\n`;
 			}
 		}
@@ -63,14 +74,14 @@ document.addEventListener("DOMContentLoaded", () => {
 	let inputFields = []; // 入力フィールドの配列を保持
 
 	// 初期データの読み込み
-	fetch('full-emoji-list.txt')
-		.then(response => response.text())
-		.then(text => {
-			const lines = text.split('\n').filter(line => line.trim() !== '');
-			const emojis = lines.map(line => line.split('\t')[0]);
+	fetch("full-emoji-list.txt")
+		.then((response) => response.text())
+		.then((text) => {
+			const lines = text.split("\n").filter((line) => line.trim() !== "");
+			const emojis = lines.map((line) => line.split("\t")[0]);
 			const readings = {};
 			for (const line of lines) {
-				const [emoji, reading] = line.split('\t');
+				const [emoji, reading] = line.split("\t");
 				if (reading) {
 					readings[emoji] = reading;
 				}
@@ -82,12 +93,12 @@ document.addEventListener("DOMContentLoaded", () => {
 				dictionary.saveToStorage();
 			}
 
-			emojiList.value = emojis.join('');
+			emojiList.value = emojis.join("");
 			dictionary.setEmojis(emojis);
 			updateInputArea(emojis);
 		})
-		.catch(error => {
-			console.error('絵文字リストの読み込みに失敗しました:', error);
+		.catch((error) => {
+			console.error("絵文字リストの読み込みに失敗しました:", error);
 		});
 
 	// リセットボタンの処理
@@ -96,14 +107,14 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	confirmResetButton.addEventListener("click", () => {
-		fetch('full-emoji-list.txt')
-			.then(response => response.text())
-			.then(text => {
-				const lines = text.split('\n').filter(line => line.trim() !== '');
-				const emojis = lines.map(line => line.split('\t')[0]);
+		fetch("full-emoji-list.txt")
+			.then((response) => response.text())
+			.then((text) => {
+				const lines = text.split("\n").filter((line) => line.trim() !== "");
+				const emojis = lines.map((line) => line.split("\t")[0]);
 				const readings = {};
 				for (const line of lines) {
-					const [emoji, reading] = line.split('\t');
+					const [emoji, reading] = line.split("\t");
 					if (reading) {
 						readings[emoji] = reading;
 					}
@@ -111,13 +122,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 				dictionary.data.readings = readings;
 				dictionary.saveToStorage();
-				emojiList.value = emojis.join('');
+				emojiList.value = emojis.join("");
 				dictionary.setEmojis(emojis);
 				updateInputArea(emojis);
 				confirmDialog.close();
 			})
-			.catch(error => {
-				console.error('絵文字リストの読み込みに失敗しました:', error);
+			.catch((error) => {
+				console.error("絵文字リストの読み込みに失敗しました:", error);
 			});
 	});
 
@@ -127,9 +138,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// キーボードショートカットの処理
 	document.addEventListener("keydown", (e) => {
-		if ((e.ctrlKey || e.metaKey) && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
+		if (
+			(e.ctrlKey || e.metaKey) &&
+			(e.key === "ArrowUp" || e.key === "ArrowDown")
+		) {
 			const currentIndex = inputFields.indexOf(document.activeElement);
-			const currentValue = currentIndex !== -1 ? inputFields[currentIndex].value : "";
+			const currentValue =
+				currentIndex !== -1 ? inputFields[currentIndex].value : "";
 
 			// フォーカスがない場合は最初のinputにフォーカス
 			if (currentIndex === -1) {
@@ -171,7 +186,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// 絵文字リストの変更を監視
 	emojiList.addEventListener("input", () => {
-		const emojis = splitChar(emojiList.value).filter((char) => /[^\s]/.test(char));
+		const emojis = splitChar(emojiList.value).filter((char) =>
+			/[^\s]/.test(char),
+		);
 		dictionary.setEmojis(emojis);
 		updateInputArea(emojis);
 	});
