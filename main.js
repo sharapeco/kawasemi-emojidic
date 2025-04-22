@@ -168,7 +168,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		// UTF-16のBOMをチェック
 		if (bytes[0] === 0xff && bytes[1] === 0xfe) {
 			return "UTF-16LE";
-		} else if (bytes[0] === 0xfe && bytes[1] === 0xff) {
+		}
+		if (bytes[0] === 0xfe && bytes[1] === 0xff) {
 			return "UTF-16BE";
 		}
 		// UTF-8のBOMをチェック
